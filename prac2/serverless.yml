@@ -53,6 +53,10 @@ functions:
     handler: handler.double_body
   double_query:
     handler: handler.double_query
+  get_user:
+    handler: users.get_user
+  create_user:
+    handler: users.create_user
 
 resources:
   Resources:
