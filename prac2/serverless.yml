@@ -20,10 +20,57 @@ org: rodwellcolin
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
 
+#table for users
+custom:
+  tableName: 'users-table-${self:provider.stage}'
+
 provider:
   name: aws
   runtime: python3.8
   region: us-east-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem 
+        - dynamodb:PutItem 
+        - dynamodb:UpdateItem 
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["UsersDynamoDBTable", "Arn" ] }
+  environment:
+    USERS_TABLE: ${self:custom.tableName}
+
+functions:
+  hello:
+    handler: handler.hello
+  empty:
+    handler: handler.empty
+  findargs:
+    handler: handler.findargs
+  double_body:
+    handler: handler.double_body
+  double_query:
+    handler: handler.double_query
+
+resources:
+  Resources:
+    UsersDynamoDBTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: userId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.tableName}
 
 # you can overwrite defaults here
 #  stage: dev
@@ -58,17 +105,7 @@ provider:
 #    - exclude-me.py
 #    - exclude-me-dir/**
 
-functions:
-  hello:
-    handler: handler.hello
-  empty:
-    handler: handler.empty
-  findargs:
-    handler: handler.findargs
-  double_body:
-    handler: handler.double_body
-  double_query:
-    handler: handler.double_query
+
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
