@@ -16,13 +16,22 @@ service: prac2
 app: newapp
 org: rodwellcolin
 
+# plugins:
+#   - serverless-python-requirements
+#   - serverless-wsgi
+
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
 
-#table for users
 custom:
-  tableName: 'users-table-${self:provider.stage}'
+  tableName: '${self:provider.stage}table2'
+  #tableName: 'users-table-${self:provider.stage}'
+  # wsgi:
+  #   app: app.app
+  #   packRequirements: false
+  # pythonRequirements:
+  #   dockerizePip: non-linux
 
 provider:
   name: aws
@@ -34,15 +43,22 @@ provider:
         - dynamodb:Query
         - dynamodb:Scan
         - dynamodb:GetItem 
-        - dynamodb:PutItem 
+        - dynamodb:PutItem
+        - dynamodb:BatchWriteItem
         - dynamodb:UpdateItem 
         - dynamodb:DeleteItem
       Resource:
-        - { "Fn::GetAtt": ["UsersDynamoDBTable", "Arn" ] }
+        - { "Fn::GetAtt": ["DynamoDBTable", "Arn" ] }
   environment:
-    USERS_TABLE: ${self:custom.tableName}
+    TABLE_NAME: ${self:custom.tableName}
+    REGION: ${self:provider.region}
 
 functions:
+  # app:
+  #   handler: wsgi.handler
+  #   events:
+  #     - http: ANY /
+  #     - http: 'ANY {proxy+}'
   hello:
     handler: handler.hello
   empty:
@@ -53,23 +69,25 @@ functions:
     handler: handler.double_body
   double_query:
     handler: handler.double_query
-  get_user:
-    handler: users.get_user
-  create_user:
-    handler: users.create_user
+  insert:
+    handler: handler.insert
+  # get_user:
+  #   handler: users.get_user
+  # create_user:
+  #   handler: users.create_user
 
 resources:
   Resources:
-    UsersDynamoDBTable:
+    DynamoDBTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
         AttributeDefinitions:
           -
-            AttributeName: userId
+            AttributeName: name
             AttributeType: S
         KeySchema:
           -
-            AttributeName: userId
+            AttributeName: name
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1

@@ -1,4 +1,6 @@
 import json
+import boto3
+import os
 
 #event structure is {'statuscode': <num>, 'body': <a json in string form> }
 #so we loads and dumps the body but not the entire event.
@@ -106,3 +108,46 @@ def errorInfo(err):
 		"args": str(err.args),
 		"string": str(err)
 	}
+
+
+
+
+#insert to a table - should this use environment variables for table name, region, etc?
+#created table: table1, us-east-2 , key = "name", type string
+#expect fielns in query string: name and value, both string.
+def insert(event, context):
+	try:
+		#get name and value params
+		if 'queryStringParameters' not in event:
+			return {
+				"statusCode": 400,
+				"body": "missing parameters - must have name and value in query string"
+			}
+		params = event['queryStringParameters']
+		if 'name' not in params or 'value' not in params:
+			return {
+				"statusCode": 400,
+				"body": "missing name or value parameter"
+			}
+		name = params['name']
+		value = params['value']
+		
+		#instert into table
+		tablename = os.environ['TABLE_NAME']
+		region = os.environ['REGION']
+		dynamodb = boto3.resource('dynamodb', region_name=region)
+		table = dynamodb.Table(tablename) #TODO get table name as a constant or environment variable
+
+		with table.batch_writer() as batch: #TODO maybe theres a better way for single write.
+		    batch.put_item(Item={"name": name, "value": value})
+
+		#TODO check response , see if insert succeeded
+		return {
+			"statusCode": 200,
+			"body": "inserted item"
+		}
+	except Exception as err:
+		return {
+			"statusCode": 500,
+			"body": json.dumps(errorInfo(err))
+		}
