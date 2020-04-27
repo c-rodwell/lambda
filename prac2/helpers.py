@@ -9,7 +9,7 @@ import os
 #queryStringParameters is already json object - don't need to loads
 #values in queryString are all strings - cast to the required type
 
-#could catch specific exceptions and re-throw with more info
+#exceptions can happen here:
 #missing queryStringParameters or parameter -> KeyError with missing arg as the string
 #empty string -> botocore.exceptions.ClientError
 
@@ -28,8 +28,9 @@ def get_querystring_args(event, required_args):
 
 #errors:
 #missing body or body param -> KeyError
+#empty string -> botocore.exceptions.ClientError
 #string value type not in quotes -> json.decoder.JSONDecodeError
-#fail assert -> AssertionError
+#wrong type: raise a TypeError
 
 def get_body_args(event, required_args):
 	body = json.loads(event['body'])
@@ -38,7 +39,7 @@ def get_body_args(event, required_args):
 		arg_type = required_args[name]
 		value = body[name]
 		if type(value) is not arg_type:
-			raise TypeError("argument "+name+": expected type "+str(arg_type)+", found "+str(type(value)))
+			raise TypeError("type error for "+name+": expected type "+str(arg_type)+", found "+str(type(value)))
 		output.append(value)
 	return output
 
@@ -55,7 +56,7 @@ def errorMessage(err):
 		statusCode = 500
 		body = str(type(err))+": "+str(err)
 	return {
-		"statusCode": statusCode
+		"statusCode": statusCode,
 		"body": body
 	}
 
