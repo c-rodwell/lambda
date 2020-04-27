@@ -25,7 +25,8 @@ org: rodwellcolin
 # frameworkVersion: "=X.X.X"
 
 custom:
-  tableName: '${self:provider.stage}table2'
+  itemTableName: '${self:provider.stage}item_table'
+  userTableName: '${self:provider.stage}user_table1'
   #tableName: 'users-table-${self:provider.stage}'
   # wsgi:
   #   app: app.app
@@ -48,9 +49,10 @@ provider:
         - dynamodb:UpdateItem 
         - dynamodb:DeleteItem
       Resource:
-        - { "Fn::GetAtt": ["DynamoDBTable", "Arn" ] }
+        - { "Fn::GetAtt": ["ItemTable", "Arn" ] }
   environment:
-    TABLE_NAME: ${self:custom.tableName}
+    ITEM_TABLE: ${self:custom.itemTableName}
+    USER_TABLE: ${self:custom.userTableName}
     REGION: ${self:provider.region}
 
 functions:
@@ -60,17 +62,17 @@ functions:
   #     - http: ANY /
   #     - http: 'ANY {proxy+}'
   hello:
-    handler: handler.hello
+    handler: hello.hello
   empty:
-    handler: handler.empty
+    handler: hello.empty
   findargs:
-    handler: handler.findargs
+    handler: hello.findargs
   double_body:
-    handler: handler.double_body
+    handler: hello.double_body
   double_query:
-    handler: handler.double_query
-  insert:
-    handler: handler.insert
+    handler: hello.double_query
+  add_item:
+    handler: item_lambdas.add_item
   # get_user:
   #   handler: users.get_user
   # create_user:
@@ -78,21 +80,43 @@ functions:
 
 resources:
   Resources:
-    DynamoDBTable:
+    UserTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
         AttributeDefinitions:
           -
-            AttributeName: name
+            AttributeName: userId
             AttributeType: S
         KeySchema:
           -
-            AttributeName: name
+            AttributeName: userId
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:custom.tableName}
+        TableName: ${self:custom.userTableName}
+
+    ItemTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: userId
+            AttributeType: S
+          -
+            AttributeName: itemId
+            AttributeType: N
+        KeySchema:
+          -
+            AttributeName: userId
+            KeyType: HASH
+          -
+            AttributeName: itemId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.itemTableName}
 
 # you can overwrite defaults here
 #  stage: dev

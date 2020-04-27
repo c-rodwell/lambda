@@ -1,6 +1,7 @@
 import json
 import boto3
 import os
+import helpers
 
 #event structure is {'statuscode': <num>, 'body': <a json in string form> }
 #so we loads and dumps the body but not the entire event.
@@ -48,7 +49,7 @@ def findargs(event, context):
 	except Exception as err:
 		return {
 			"statusCode": 500,
-			"body": json.dumps(errorInfo(err))
+			"body": json.dumps(helpers.errorInfo(err))
 		}
 
 #get a number from "num" field in body, double it
@@ -73,7 +74,7 @@ def double_body(event, context):
 	except Exception as err:
 		return {
 			"statusCode": 500,
-			"body": json.dumps(errorInfo(err))
+			"body": json.dumps(helpers.errorInfo(err))
 		}
 
 #get number fro "num" field in query string and double it.
@@ -98,16 +99,16 @@ def double_query(event, context):
 	except Exception as err:
 		return {
 			"statusCode": 500,
-			"body": json.dumps(errorInfo(err))
+			"body": json.dumps(helpers.errorInfo(err))
 		}
 
 #can I put functions here other than handlers?
-def errorInfo(err):
-	return {
-		"type": str(type(err)),
-		"args": str(err.args),
-		"string": str(err)
-	}
+# def errorInfo(err):
+# 	return {
+# 		"type": str(type(err)),
+# 		"args": str(err.args),
+# 		"string": str(err)
+# 	}
 
 
 
@@ -115,39 +116,26 @@ def errorInfo(err):
 #insert to a table - should this use environment variables for table name, region, etc?
 #created table: table1, us-east-2 , key = "name", type string
 #expect fielns in query string: name and value, both string.
-def insert(event, context):
-	try:
-		#get name and value params
-		if 'queryStringParameters' not in event:
-			return {
-				"statusCode": 400,
-				"body": "missing parameters - must have name and value in query string"
-			}
-		params = event['queryStringParameters']
-		if 'name' not in params or 'value' not in params:
-			return {
-				"statusCode": 400,
-				"body": "missing name or value parameter"
-			}
-		name = params['name']
-		value = params['value']
-		
-		#instert into table
-		tablename = os.environ['TABLE_NAME']
-		region = os.environ['REGION']
-		dynamodb = boto3.resource('dynamodb', region_name=region)
-		table = dynamodb.Table(tablename) #TODO get table name as a constant or environment variable
 
-		with table.batch_writer() as batch: #TODO maybe theres a better way for single write.
-		    batch.put_item(Item={"name": name, "value": value})
+#TODO check response , see if insert succeeded
 
-		#TODO check response , see if insert succeeded
-		return {
-			"statusCode": 200,
-			"body": "inserted item"
-		}
-	except Exception as err:
-		return {
-			"statusCode": 500,
-			"body": json.dumps(errorInfo(err))
-		}
+#example success resp: 
+
+		# {'ResponseMetadata': 
+		# 	{'RequestId': 'NHJUPAUA28J60R9FSAMGFVT9DNVV4KQNSO5AEMVJF66Q9ASUAAJG',
+		# 	'HTTPStatusCode': 200,
+		# 	'HTTPHeaders': {
+		# 		'server': 'Server',
+		# 		'date': 'Sun, 26 Apr 2020 07:58:16 GMT',
+		# 		'content-type': 'application/x-amz-json-1.0',
+		# 		'content-length': '2',
+		# 		'connection': 'keep-alive',
+		# 		'x-amzn-requestid': 'NHJUPAUA28J60R9FSAMGFVT9DNVV4KQNSO5AEMVJF66Q9ASUAAJG',
+		# 		'x-amz-crc32': '2745614147'},
+		# 	'RetryAttempts': 0}}
+
+#inserting a new item, inserting an already existing item (everything same), and replacing (same primary key, different attributes)
+	# all succeed with same message, don't give any indication of which of those happened
+#bad insert caused exception (clienterror) when I tried insteadd of error message in response.
+
+
