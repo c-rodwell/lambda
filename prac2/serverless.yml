@@ -16,10 +16,6 @@ service: prac2
 app: newapp
 org: rodwellcolin
 
-# plugins:
-#   - serverless-python-requirements
-#   - serverless-wsgi
-
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
@@ -27,12 +23,6 @@ org: rodwellcolin
 custom:
   itemTableName: '${self:provider.stage}item_table'
   userTableName: '${self:provider.stage}user_table1'
-  #tableName: 'users-table-${self:provider.stage}'
-  # wsgi:
-  #   app: app.app
-  #   packRequirements: false
-  # pythonRequirements:
-  #   dockerizePip: non-linux
 
 provider:
   name: aws
@@ -50,17 +40,13 @@ provider:
         - dynamodb:DeleteItem
       Resource:
         - { "Fn::GetAtt": ["ItemTable", "Arn" ] }
+        - { "Fn::GetAtt": ["UserTable", "Arn" ] }
   environment:
     ITEM_TABLE: ${self:custom.itemTableName}
     USER_TABLE: ${self:custom.userTableName}
     REGION: ${self:provider.region}
 
 functions:
-  # app:
-  #   handler: wsgi.handler
-  #   events:
-  #     - http: ANY /
-  #     - http: 'ANY {proxy+}'
   hello:
     handler: hello.hello
   empty:
@@ -73,10 +59,8 @@ functions:
     handler: hello.double_query
   add_item:
     handler: item_lambdas.add_item
-  # get_user:
-  #   handler: users.get_user
-  # create_user:
-  #   handler: users.create_user
+  create_user:
+    handler: user_lambdas.create_user
 
 resources:
   Resources:

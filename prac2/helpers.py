@@ -2,12 +2,14 @@ import json
 import boto3
 import os
 
-
+#TODOs:
+	#give more bad argument errors: 
+		#ClientError on empty string for key - maybe check in get_body_args and get_querystring_args
+	#allow optional arguments
+	#can body or querystring be turned directly into a dynamodb query without extracting specific args?
 
 #get arguments from query string, throws exception if not found
 #args: dictionary of name:type
-#queryStringParameters is already json object - don't need to loads
-#values in queryString are all strings - cast to the required type
 
 #exceptions can happen here:
 #missing queryStringParameters or parameter -> KeyError with missing arg as the string
@@ -23,8 +25,6 @@ def get_querystring_args(event, required_args):
 
 #get arguments from body, throws exception if not found
 #args: dictionary of name:type
-#body is string form of json, so use loads
-#because we loads, values in body already are that type, so assert instead of casting.
 
 #errors:
 #missing body or body param -> KeyError
@@ -45,10 +45,6 @@ def get_body_args(event, required_args):
 
 #error message to return - give right error code and explain it
 #should be 400 for bad inputs and 500 for unexpected error
-
-#TODO give more bad argument errors: 
-	#ClientError on empty string for key - maybe check in get_body_args and get_querystring_args
-
 def errorMessage(err):
 	if type(err) is KeyError:
 		statusCode = 400
@@ -59,6 +55,9 @@ def errorMessage(err):
 	elif type(err) is json.decoder.JSONDecodeError:
 		statusCode = 400
 		body = "invalid JSON: "+str(err)
+	elif type(err) is FileNotFoundError:
+		statusCode = 400
+		body = "not found: "+str(err)
 	else:
 		statusCode = 500
 		body = str(type(err))+": "+str(err)
@@ -66,11 +65,3 @@ def errorMessage(err):
 		"statusCode": statusCode,
 		"body": body
 	}
-
-
-#increment the user's item counter, return the current value
-def nextItemNum(userId):
-	#if user doens't have an item count, make it zero
-	#add one to item count
-	#return the increased value
-	return
