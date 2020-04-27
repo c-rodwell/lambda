@@ -1,7 +1,6 @@
 import json
 import boto3
 import os
-import helpers
 
 #event structure is {'statuscode': <num>, 'body': <a json in string form> }
 #so we loads and dumps the body but not the entire event.
@@ -49,7 +48,7 @@ def findargs(event, context):
 	except Exception as err:
 		return {
 			"statusCode": 500,
-			"body": json.dumps(helpers.errorInfo(err))
+			"body": json.dumps(errorInfo(err))
 		}
 
 #get a number from "num" field in body, double it
@@ -74,7 +73,7 @@ def double_body(event, context):
 	except Exception as err:
 		return {
 			"statusCode": 500,
-			"body": json.dumps(helpers.errorInfo(err))
+			"body": json.dumps(errorInfo(err))
 		}
 
 #get number fro "num" field in query string and double it.
@@ -99,16 +98,16 @@ def double_query(event, context):
 	except Exception as err:
 		return {
 			"statusCode": 500,
-			"body": json.dumps(helpers.errorInfo(err))
+			"body": json.dumps(errorInfo(err))
 		}
 
 #can I put functions here other than handlers?
-# def errorInfo(err):
-# 	return {
-# 		"type": str(type(err)),
-# 		"args": str(err.args),
-# 		"string": str(err)
-# 	}
+def errorInfo(err):
+	return {
+		"type": str(type(err)),
+		"args": str(err.args),
+		"string": str(err)
+	}
 
 
 

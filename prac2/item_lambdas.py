@@ -5,8 +5,8 @@ import helpers
 
 def add_item(event, context):
 	try:
-		#user, value = helpers.get_querystring_args(event, {'user':str, 'value':str})
-		user, value = helpers.get_body_args(event, {'user':str, 'value':str})
+		user, value = helpers.get_querystring_args(event, {'user':str, 'value':str})
+		#user, value = helpers.get_body_args(event, {'user':str, 'value':str})
 
 		#TODO figure out what itemnum to add the value as.
 		itemNum = 1
@@ -21,10 +21,6 @@ def add_item(event, context):
 		}
 	except Exception as err:
 		return helpers.errorMessage(err)
-		# return {
-		# 	"statusCode": 500,
-		# 	"body": json.dumps(helpers.errorInfo(err))
-		# }
 
 def edit_item(event, context):
 	return

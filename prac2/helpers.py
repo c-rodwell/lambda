@@ -45,6 +45,10 @@ def get_body_args(event, required_args):
 
 #error message to return - give right error code and explain it
 #should be 400 for bad inputs and 500 for unexpected error
+
+#TODO give more bad argument errors: 
+	#ClientError on empty string for key - maybe check in get_body_args and get_querystring_args
+
 def errorMessage(err):
 	if type(err) is KeyError:
 		statusCode = 400
@@ -52,6 +56,9 @@ def errorMessage(err):
 	elif type(err) is TypeError:
 		statusCode = 400
 		body = str(err)
+	elif type(err) is json.decoder.JSONDecodeError:
+		statusCode = 400
+		body = "invalid JSON: "+str(err)
 	else:
 		statusCode = 500
 		body = str(type(err))+": "+str(err)
@@ -60,12 +67,6 @@ def errorMessage(err):
 		"body": body
 	}
 
-def errorInfo(err):
-	return {
-		"type": str(type(err)),
-		"args": str(err.args),
-		"string": str(err)
-	}
 
 #increment the user's item counter, return the current value
 def nextItemNum(userId):
