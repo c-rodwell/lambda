@@ -2,19 +2,6 @@ import json
 import boto3
 import os
 
-def errorInfo(err):
-	return {
-		"type": str(type(err)),
-		"args": str(err.args),
-		"string": str(err)
-	}
-
-#increment the user's item counter, return the current value
-def nextItemNum(userId):
-	#if user doens't have an item count, make it zero
-	#add one to item count
-	#return the increased value
-	return
 
 
 #get arguments from query string, throws exception if not found
@@ -55,3 +42,33 @@ def get_body_args(event, required_args):
 		output.append(value)
 	return output
 
+#error message to return - give right error code and explain it
+#should be 400 for bad inputs and 500 for unexpected error
+def errorMessage(err):
+	if type(err) is KeyError:
+		statusCode = 400
+		body = "missing parameter: "+str(err)
+	elif type(err) is TypeError:
+		statusCode = 400
+		body = str(err)
+	else:
+		statusCode = 500
+		body = str(type(err))+": "+str(err)
+	return {
+		"statusCode": statusCode
+		"body": body
+	}
+
+def errorInfo(err):
+	return {
+		"type": str(type(err)),
+		"args": str(err.args),
+		"string": str(err)
+	}
+
+#increment the user's item counter, return the current value
+def nextItemNum(userId):
+	#if user doens't have an item count, make it zero
+	#add one to item count
+	#return the increased value
+	return
