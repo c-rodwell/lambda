@@ -34,7 +34,13 @@ def get_user(event, context):
 	except Exception as err:
 		return helpers.errorMessage(err)
 
-def edit_user(event, context):
+
+#edit user- what should be editable?
+#userId - not allowed to change since it's the primary key
+#name - can change
+#numCreatedItems - set through nextItemNum, not editable by user.
+
+def edit_user_attribute(userId, attrName, attrValue):
 	raise notImplemented
 
 def delete_user(event, context):
@@ -45,17 +51,29 @@ def delete_user(event, context):
 #increment the user's item counter, return the current value
 def nextItemNum(userId):
 	table = userTableResource()
-	resp = table.get_item(Key={"userId": userId})
+	getResp = table.get_item(Key={"userId": userId})
 	#user doesn't exist - what is appropriate error?
-	if 'Item' not in resp:
+	if 'Item' not in getResp:
 		raise FileNotFoundError("user "+userId+" does not exist")
-	userInfo = resp['Item']
+	userInfo = getResp['Item']
 	if 'numCreatedItems' in userInfo:
 		num = userInfo['numCreatedItems'] + 1
 	else:
 		num = 1
 		
-	#TODO set the numCreatedItems for the user to num
+	#set the numCreatedItems for the user to num
+	#could make this a separate editUser(attrName, attrValue) function
+	editResp = table.update_item(
+		Key = {"userId": userId},
+		ExpressionAttributeNames={
+			"#attrName": "numCreatedItems",
+		},
+		ExpressionAttributeValues={
+			":attrValue": num,
+		},
+		UpdateExpression="SET #attrName = :attrValue",
+	)
+
 	return num
 
 def userTableResource():
