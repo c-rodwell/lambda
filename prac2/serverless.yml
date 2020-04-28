@@ -47,20 +47,22 @@ provider:
     REGION: ${self:provider.region}
 
 functions:
-  hello:
-    handler: hello.hello
-  empty:
-    handler: hello.empty
-  findargs:
-    handler: hello.findargs
-  double_body:
-    handler: hello.double_body
-  double_query:
-    handler: hello.double_query
-  add_item:
-    handler: item_lambdas.add_item
+  # hello:
+  #   handler: hello.hello
+  # empty:
+  #   handler: hello.empty
+  # findargs:
+  #   handler: hello.findargs
+  # double_body:
+  #   handler: hello.double_body
+  # double_query:
+  #   handler: hello.double_query
   create_user:
     handler: user_lambdas.create_user
+  get_user:
+    handler: user_lambdas.get_user
+  add_item:
+    handler: item_lambdas.add_item
 
 resources:
   Resources:

@@ -17,6 +17,23 @@ def create_user(event, context):
 	except Exception as err:
 		return helpers.errorMessage(err)
 
+#get one user by id and return their info.
+#maybe make an internal getuser helper - logic shared with nextItemNum
+def get_user(event, context):
+	try:
+		[userId] = helpers.get_body_args(event, {'userId':str})
+		table = userTableResource()
+		resp = table.get_item(Key={"userId": userId})
+		if 'Item' not in resp:
+			raise FileNotFoundError("user "+userId+" does not exist")
+		userInfo = resp['Item']
+		return{
+			"statusCode": 200,
+			"body": json.dumps(userInfo)
+		}
+	except Exception as err:
+		return helpers.errorMessage(err)
+
 def edit_user(event, context):
 	raise notImplemented
 
@@ -29,11 +46,9 @@ def delete_user(event, context):
 def nextItemNum(userId):
 	table = userTableResource()
 	resp = table.get_item(Key={"userId": userId})
-	
 	#user doesn't exist - what is appropriate error?
 	if 'Item' not in resp:
 		raise FileNotFoundError("user "+userId+" does not exist")
-
 	userInfo = resp['Item']
 	if 'numCreatedItems' in userInfo:
 		num = userInfo['numCreatedItems'] + 1
@@ -42,7 +57,6 @@ def nextItemNum(userId):
 		
 	#TODO set the numCreatedItems for the user to num
 	return num
-
 
 def userTableResource():
 	user_table_name = os.environ['USER_TABLE']

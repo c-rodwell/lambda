@@ -10,11 +10,9 @@ import os
 
 #get arguments from query string, throws exception if not found
 #args: dictionary of name:type
-
 #exceptions can happen here:
 #missing queryStringParameters or parameter -> KeyError with missing arg as the string
 #empty string -> botocore.exceptions.ClientError
-
 def get_querystring_args(event, required_args):
 	queryString = event['queryStringParameters']
 	output = []
@@ -25,13 +23,11 @@ def get_querystring_args(event, required_args):
 
 #get arguments from body, throws exception if not found
 #args: dictionary of name:type
-
 #errors:
 #missing body or body param -> KeyError
 #empty string -> botocore.exceptions.ClientError
 #string value type not in quotes -> json.decoder.JSONDecodeError
 #wrong type: raise a TypeError
-
 def get_body_args(event, required_args):
 	body = json.loads(event['body'])
 	output = []
@@ -56,7 +52,7 @@ def errorMessage(err):
 		statusCode = 400
 		body = "invalid JSON: "+str(err)
 	elif type(err) is FileNotFoundError:
-		statusCode = 400
+		statusCode = 404
 		body = "not found: "+str(err)
 	else:
 		statusCode = 500
