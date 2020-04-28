@@ -65,6 +65,8 @@ functions:
     handler: item_lambdas.add_item
   get_item:
     handler: item_lambdas.get_item
+  edit_item_field:
+    handler: item_lambdas.edit_item_field
 
 resources:
   Resources:

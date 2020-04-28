@@ -35,8 +35,31 @@ def get_item(event, context):
 	except Exception as err:
 		return helpers.errorMessage(err)
 
-def edit_item(event, context):
-	return
+#change one attribute of the item, including custom attributes
+#do we want to allow something this general?
+def edit_item_field(event, context):
+	try:
+		#userId, itemId, attrName, attrValue = helpers.get_body_args(event, {'userId':str, 'itemId':int, 'attrName':str, 'attrValue':str})
+		userId, itemId, attrName, attrValue = helpers.get_querystring_args(event, {'userId':str, 'itemId':int, 'attrName':str, 'attrValue':str})
+		table = itemTableResource()
+		editResp = table.update_item(
+			Key = {"userId": userId, "itemId": itemId},
+			ExpressionAttributeNames={
+				"#attrName": attrName,
+			},
+			ExpressionAttributeValues={
+				":attrValue": attrValue,
+			},
+			UpdateExpression="SET #attrName = :attrValue",
+		)
+
+		#TODO check the edit response for success, or return the response
+		return{
+			"statusCode": 200,
+			"body": "changed "+attrName+" to "+attrValue
+		}
+	except Exception as err:
+		return helpers.errorMessage(err)
 
 def delete_item(event, context):
 	return
