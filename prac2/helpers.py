@@ -1,10 +1,12 @@
 import json
 import boto3
 import os
+import decimal
 
 #TODOs:
 	#give more bad argument errors: 
 		#ClientError on empty string for key - maybe check in get_body_args and get_querystring_args
+		#ValueError for string  when it should be int type in get_querystring_args
 	#allow optional arguments
 	#can body or querystring be turned directly into a dynamodb query without extracting specific args?
 
@@ -61,3 +63,11 @@ def errorMessage(err):
 		"statusCode": statusCode,
 		"body": body
 	}
+
+#decoder to convert dynamodb decimal type back to int. source: https://www.reddit.com/r/aws/comments/bwvio8/dynamodb_has_been_storing_integers_as/
+#use: json.dumps({'someNumber': 123456789}, cls=DecimalEncoder)
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return int(obj)
+        return super(DecimalEncoder, self).default(obj)

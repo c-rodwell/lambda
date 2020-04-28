@@ -9,14 +9,28 @@ import user_lambdas
 def add_item(event, context):
 	try:
 		#user, value = helpers.get_querystring_args(event, {'user':str, 'value':str})
-		user, value = helpers.get_body_args(event, {'user':str, 'value':str})
-		itemNum = user_lambdas.nextItemNum(user)
+		userId, value = helpers.get_body_args(event, {'userId':str, 'value':str})
+		itemNum = user_lambdas.nextItemNum(userId)
 		table = itemTableResource()
-		resp = table.put_item(Item={"userId": user, "itemId": itemNum, "value": value})
-		
+		resp = table.put_item(Item={"userId": userId, "itemId": itemNum, "value": value})
 		return {
 			"statusCode": 200,
 			"body": "inserted item"
+		}
+	except Exception as err:
+		return helpers.errorMessage(err)
+
+def get_item(event, context):
+	try:
+		#userId, itemId = helpers.get_body_args(event, {'userId':str, 'itemId':int})
+		userId, itemId = helpers.get_querystring_args(event, {'userId':str, 'itemId':int})
+		table = itemTableResource()
+		resp = table.get_item(Key={"userId": userId, "itemId": itemId})
+		if 'Item' not in resp:
+			raise FileNotFoundError("item with userId = "+userId+", itemId = "+str(itemId)+" does not exist")
+		return{
+			"statusCode": 200,
+			"body": json.dumps(resp['Item'], cls=helpers.DecimalEncoder)
 		}
 	except Exception as err:
 		return helpers.errorMessage(err)

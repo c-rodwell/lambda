@@ -63,6 +63,8 @@ functions:
     handler: user_lambdas.get_user
   add_item:
     handler: item_lambdas.add_item
+  get_item:
+    handler: item_lambdas.get_item
 
 resources:
   Resources:
