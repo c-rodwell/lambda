@@ -3,8 +3,9 @@ import boto3
 import os
 import helpers
 import user_lambdas
+from boto3.dynamodb.conditions import Key
 
-#_____HANDLERS_____
+#_____LAMBDAS_____
 
 def add_item(event, context):
 	try:
@@ -35,7 +36,18 @@ def get_item(event, context):
 	except Exception as err:
 		return helpers.errorMessage(err)
 
-#change one attribute of the item, including custom attributes
+#get all items for the user
+#TODO - allow filters
+def get_user_items(event, context):
+	try:
+		[userId] = helpers.get_body_args(event, {'userId':str})
+		table = itemTableResource()
+		resp = table.query(KeyConditionExpression=Key('userId').eq(userId))
+		return resp
+	except Exception as err:
+		return helpers.errorMessage(err)
+
+#change one attribute of the item, including custom attributes. currently value has to be string.
 #do we want to allow something this general?
 def edit_item_field(event, context):
 	try:
@@ -56,7 +68,7 @@ def edit_item_field(event, context):
 		#TODO check the edit response for success, or return the response
 		return{
 			"statusCode": 200,
-			"body": "changed "+attrName+" to "+attrValue
+			"body": "set attribute\""+attrName+"\" to "+attrValue
 		}
 	except Exception as err:
 		return helpers.errorMessage(err)

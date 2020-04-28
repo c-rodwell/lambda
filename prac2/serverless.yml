@@ -65,6 +65,8 @@ functions:
     handler: item_lambdas.add_item
   get_item:
     handler: item_lambdas.get_item
+  get_user_items:
+    handler: item_lambdas.get_user_items  
   edit_item_field:
     handler: item_lambdas.edit_item_field
 

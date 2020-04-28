@@ -3,7 +3,7 @@ import boto3
 import os
 import helpers
 
-#_____HANDLERS_____
+#_____LAMBDAS_____
 
 def create_user(event, context):
 	try:
