@@ -16,22 +16,13 @@ service: prac2
 app: newapp
 org: rodwellcolin
 
-# plugins:
-#   - serverless-python-requirements
-#   - serverless-wsgi
-
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
 
 custom:
-  tableName: '${self:provider.stage}table2'
-  #tableName: 'users-table-${self:provider.stage}'
-  # wsgi:
-  #   app: app.app
-  #   packRequirements: false
-  # pythonRequirements:
-  #   dockerizePip: non-linux
+  itemTableName: '${self:provider.stage}item_table'
+  userTableName: '${self:provider.stage}user_table1'
 
 provider:
   name: aws
@@ -48,51 +39,78 @@ provider:
         - dynamodb:UpdateItem 
         - dynamodb:DeleteItem
       Resource:
-        - { "Fn::GetAtt": ["DynamoDBTable", "Arn" ] }
+        - { "Fn::GetAtt": ["ItemTable", "Arn" ] }
+        - { "Fn::GetAtt": ["UserTable", "Arn" ] }
   environment:
-    TABLE_NAME: ${self:custom.tableName}
+    ITEM_TABLE: ${self:custom.itemTableName}
+    USER_TABLE: ${self:custom.userTableName}
     REGION: ${self:provider.region}
 
 functions:
-  # app:
-  #   handler: wsgi.handler
-  #   events:
-  #     - http: ANY /
-  #     - http: 'ANY {proxy+}'
-  hello:
-    handler: handler.hello
-  empty:
-    handler: handler.empty
-  findargs:
-    handler: handler.findargs
-  double_body:
-    handler: handler.double_body
-  double_query:
-    handler: handler.double_query
-  insert:
-    handler: handler.insert
-  # get_user:
-  #   handler: users.get_user
-  # create_user:
-  #   handler: users.create_user
+  # hello:
+  #   handler: hello.hello
+  # empty:
+  #   handler: hello.empty
+  # findargs:
+  #   handler: hello.findargs
+  # double_body:
+  #   handler: hello.double_body
+  # double_query:
+  #   handler: hello.double_query
+  create_user:
+    handler: user_lambdas.create_user
+  get_user:
+    handler: user_lambdas.get_user
+  add_item:
+    handler: item_lambdas.add_item
+  get_item:
+    handler: item_lambdas.get_item
+  get_user_items:
+    handler: item_lambdas.get_user_items  
+  edit_item_field:
+    handler: item_lambdas.edit_item_field
+  delete_item:
+    handler: item_lambdas.delete_item
 
 resources:
   Resources:
-    DynamoDBTable:
+    UserTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
         AttributeDefinitions:
           -
-            AttributeName: name
+            AttributeName: userId
             AttributeType: S
         KeySchema:
           -
-            AttributeName: name
+            AttributeName: userId
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:custom.tableName}
+        TableName: ${self:custom.userTableName}
+
+    ItemTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: userId
+            AttributeType: S
+          -
+            AttributeName: itemId
+            AttributeType: N
+        KeySchema:
+          -
+            AttributeName: userId
+            KeyType: HASH
+          -
+            AttributeName: itemId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.itemTableName}
 
 # you can overwrite defaults here
 #  stage: dev
