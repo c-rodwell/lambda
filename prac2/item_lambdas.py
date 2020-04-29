@@ -73,8 +73,38 @@ def edit_item_field(event, context):
 	except Exception as err:
 		return helpers.errorMessage(err)
 
+#delete one item by userId and itemId
+#version with client.delete_item : client doesn't specify region, deletes from table in the region matching the lambda
+#should this use resource delete_item instead?
 def delete_item(event, context):
-	return
+	try:
+		userId, itemId = helpers.get_querystring_args(event, {'userId':str, 'itemId':int})
+		item_table_name = os.environ['ITEM_TABLE']
+		client = boto3.client('dynamodb')
+		resp = client.delete_item(
+			TableName=item_table_name,
+			Key={
+				'userId':{
+					'S': userId,
+				},
+				'itemId':{
+					'N': str(itemId) 	#should it be entered as string type?
+				}
+
+			},
+			ReturnValues='ALL_OLD')
+		if "Attributes" in resp: #deleted something
+			return{
+				"statusCode": 200,
+				"body": "deleted item: "+json.dumps(resp['Attributes'])
+			}
+		else:
+			return{
+				"statusCode": 404,
+				"body": "item with userId = "+userId+", itemId = "+str(itemId)+" does not exist."
+			}
+	except Exception as err:
+		return helpers.errorMessage(err)
 
 #_____INTERNAL_____
 

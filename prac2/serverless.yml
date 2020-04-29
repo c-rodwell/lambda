@@ -69,6 +69,8 @@ functions:
     handler: item_lambdas.get_user_items  
   edit_item_field:
     handler: item_lambdas.edit_item_field
+  delete_item:
+    handler: item_lambdas.delete_item
 
 resources:
   Resources:
