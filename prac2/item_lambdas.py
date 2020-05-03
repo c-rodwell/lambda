@@ -9,7 +9,6 @@ from boto3.dynamodb.conditions import Key
 
 def add_item(event, context):
 	try:
-		#user, value = helpers.get_querystring_args(event, {'user':str, 'value':str})
 		userId, value = helpers.get_body_args(event, {'userId':str, 'value':str})
 		itemNum = user_lambdas.nextItemNum(userId)
 		table = itemTableResource()
@@ -23,7 +22,6 @@ def add_item(event, context):
 
 def get_item(event, context):
 	try:
-		#userId, itemId = helpers.get_body_args(event, {'userId':str, 'itemId':int})
 		userId, itemId = helpers.get_querystring_args(event, {'userId':str, 'itemId':int})
 		table = itemTableResource()
 		resp = table.get_item(Key={"userId": userId, "itemId": itemId})
@@ -38,12 +36,16 @@ def get_item(event, context):
 
 #get all items for the user
 #TODO - allow filters
+#return count and metadata, or just the items list?
 def get_user_items(event, context):
 	try:
-		[userId] = helpers.get_body_args(event, {'userId':str})
+		[userId] = helpers.get_querystring_args(event, {'userId':str})
 		table = itemTableResource()
 		resp = table.query(KeyConditionExpression=Key('userId').eq(userId))
-		return resp
+		return{
+			"statusCode": 200,
+			"body": json.dumps(resp, cls=helpers.DecimalEncoder)
+		}
 	except Exception as err:
 		return helpers.errorMessage(err)
 
@@ -51,8 +53,7 @@ def get_user_items(event, context):
 #do we want to allow something this general?
 def edit_item_field(event, context):
 	try:
-		#userId, itemId, attrName, attrValue = helpers.get_body_args(event, {'userId':str, 'itemId':int, 'attrName':str, 'attrValue':str})
-		userId, itemId, attrName, attrValue = helpers.get_querystring_args(event, {'userId':str, 'itemId':int, 'attrName':str, 'attrValue':str})
+		userId, itemId, attrName, attrValue = helpers.get_body_args(event, {'userId':str, 'itemId':int, 'attrName':str, 'attrValue':str})
 		table = itemTableResource()
 		editResp = table.update_item(
 			Key = {"userId": userId, "itemId": itemId},
@@ -68,7 +69,7 @@ def edit_item_field(event, context):
 		#TODO check the edit response for success, or return the response
 		return{
 			"statusCode": 200,
-			"body": "set attribute\""+attrName+"\" to "+attrValue
+			"body": "set attribute '"+attrName+"' to "+repr(attrValue)
 		}
 	except Exception as err:
 		return helpers.errorMessage(err)
@@ -78,7 +79,7 @@ def edit_item_field(event, context):
 #should this use resource delete_item instead?
 def delete_item(event, context):
 	try:
-		userId, itemId = helpers.get_querystring_args(event, {'userId':str, 'itemId':int})
+		userId, itemId = helpers.get_body_args(event, {'userId':str, 'itemId':int})
 		item_table_name = os.environ['ITEM_TABLE']
 		client = boto3.client('dynamodb')
 		resp = client.delete_item(

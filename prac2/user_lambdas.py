@@ -21,7 +21,7 @@ def create_user(event, context):
 #maybe make an internal getuser helper - logic shared with nextItemNum
 def get_user(event, context):
 	try:
-		[userId] = helpers.get_body_args(event, {'userId':str})
+		[userId] = helpers.get_querystring_args(event, {'userId':str})
 		table = userTableResource()
 		resp = table.get_item(Key={"userId": userId})
 		if 'Item' not in resp:
@@ -34,12 +34,10 @@ def get_user(event, context):
 	except Exception as err:
 		return helpers.errorMessage(err)
 
-
 #edit user- what should be editable?
 #userId - not allowed to change since it's the primary key
 #name - can change
 #numCreatedItems - set through nextItemNum, not editable by user.
-
 def edit_user_attribute(userId, attrName, attrValue):
 	raise notImplemented
 
@@ -73,7 +71,6 @@ def nextItemNum(userId):
 		},
 		UpdateExpression="SET #attrName = :attrValue",
 	)
-
 	return num
 
 def userTableResource():
