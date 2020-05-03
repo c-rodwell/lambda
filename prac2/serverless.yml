@@ -51,43 +51,43 @@ functions:
     handler: user_lambdas.create_user
     events:
      - http:
-        path: users/create
+        path: users
         method: post
   get_user:
     handler: user_lambdas.get_user
     events:
      - http:
-        path: users/get
+        path: users
         method: get
   add_item:
     handler: item_lambdas.add_item
     events:
      - http:
-        path: items/add
-        method: put
+        path: items
+        method: post
   get_item:
     handler: item_lambdas.get_item
     events:
      - http:
-        path: items/get
+        path: items
         method: get
   get_user_items:
     handler: item_lambdas.get_user_items
     events:
      - http:
-        path: items/get_all
+        path: useritems
         method: get
   edit_item_field:
     handler: item_lambdas.edit_item_field
     events:
      - http:
-        path: items/edit
+        path: items
         method: put
   delete_item:
     handler: item_lambdas.delete_item
     events:
      - http:
-        path: items/delete
+        path: items
         method: delete
 
 resources:

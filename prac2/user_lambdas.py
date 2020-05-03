@@ -29,7 +29,7 @@ def get_user(event, context):
 		userInfo = resp['Item']
 		return{
 			"statusCode": 200,
-			"body": json.dumps(userInfo)
+			"body": json.dumps(userInfo, cls=helpers.DecimalEncoder)
 		}
 	except Exception as err:
 		return helpers.errorMessage(err)
