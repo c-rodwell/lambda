@@ -16,8 +16,8 @@ def add_item(event, context):
 		table = itemTableResource()
 		resp = table.put_item(Item={"userId": userId, "itemId": itemNum, "value": value})
 		return {
-			"statusCode": 200,
-			"body": "inserted item"
+			"statusCode": 201,
+			"body": "added item"
 		}
 	except Exception as err:
 		return json_func.errorMessage(err)

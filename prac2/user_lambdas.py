@@ -10,7 +10,7 @@ def create_user(event, context):
 		userId, name = json_func.get_body_args(event, {'userId':str, 'name':str})
 		if existingUser(userId):
 			return {
-				"statusCode": 400,
+				"statusCode": 409,
 				"body": "user with: id = "+userId+" already exists"
 			}
 		table = userTableResource()
