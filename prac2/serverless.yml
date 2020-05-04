@@ -1,24 +1,7 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
 service: prac2
 # app and org for use with dashboard.serverless.com
 app: newapp
 org: rodwellcolin
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
 
 custom:
   itemTableName: '${self:provider.stage}item_table'
@@ -130,6 +113,13 @@ resources:
           WriteCapacityUnits: 1
         TableName: ${self:custom.itemTableName}
 
+# For full config options, check the docs:
+#    docs.serverless.com
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
@@ -162,8 +152,6 @@ resources:
 #  exclude:
 #    - exclude-me.py
 #    - exclude-me-dir/**
-
-
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

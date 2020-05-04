@@ -1,13 +1,18 @@
 import json
 import boto3
 import os
-import helpers
+import json_func
 
 #_____LAMBDAS_____
 
 def create_user(event, context):
 	try:
-		userId, name = helpers.get_body_args(event, {'userId':str, 'name':str})
+		userId, name = json_func.get_body_args(event, {'userId':str, 'name':str})
+		if existingUser(userId):
+			return {
+				"statusCode": 400,
+				"body": "user with: id = "+userId+" already exists"
+			}
 		table = userTableResource()
 		resp = table.put_item(Item={"userId": userId, "name": name})
 		return {
@@ -15,24 +20,30 @@ def create_user(event, context):
 			"body": "created user: id = "+userId+", name = "+name
 		}
 	except Exception as err:
-		return helpers.errorMessage(err)
+		return json_func.errorMessage(err)
 
 #get one user by id and return their info.
 #maybe make an internal getuser helper - logic shared with nextItemNum
 def get_user(event, context):
 	try:
-		[userId] = helpers.get_querystring_args(event, {'userId':str})
-		table = userTableResource()
-		resp = table.get_item(Key={"userId": userId})
-		if 'Item' not in resp:
+		[userId] = json_func.get_querystring_args(event, {'userId':str})
+		
+		# table = userTableResource()
+		# resp = table.get_item(Key={"userId": userId})
+		# if 'Item' not in resp:
+		# 	raise FileNotFoundError("user "+userId+" does not exist")
+		#userInfo = resp['Item']
+
+		userInfo = existingUser(userId)
+		if not userInfo:
 			raise FileNotFoundError("user "+userId+" does not exist")
-		userInfo = resp['Item']
+
 		return{
 			"statusCode": 200,
-			"body": json.dumps(userInfo, cls=helpers.DecimalEncoder)
+			"body": json.dumps(userInfo, cls=json_func.DecimalEncoder)
 		}
 	except Exception as err:
-		return helpers.errorMessage(err)
+		return json_func.errorMessage(err)
 
 #edit user- what should be editable?
 #userId - not allowed to change since it's the primary key
@@ -46,14 +57,35 @@ def delete_user(event, context):
 
 #_____INTERNAL_____
 
+def userTableResource():
+	user_table_name = os.environ['USER_TABLE']
+	region = os.environ['REGION']
+	dynamodb = boto3.resource('dynamodb', region_name=region)
+	table = dynamodb.Table(user_table_name)
+	return table
+
+#return user info if exists, else None
+#use in: get_user, nextItemNum.
+#is it inefficient to create userTableResource a bunch of times? could pass as argument
+def existingUser(userId):
+	table = userTableResource()
+	resp = table.get_item(Key={"userId": userId})
+	if 'Item' in getResp:
+		return resp['Item'] 
+	return None
+
 #increment the user's item counter, return the current value
 def nextItemNum(userId):
-	table = userTableResource()
-	getResp = table.get_item(Key={"userId": userId})
-	#user doesn't exist - what is appropriate error?
-	if 'Item' not in getResp:
+	# table = userTableResource()
+	# getResp = table.get_item(Key={"userId": userId})
+	# if 'Item' not in getResp:
+	# 	raise FileNotFoundError("user "+userId+" does not exist")
+	# userInfo = getResp['Item']
+
+	userInfo = existingUser(userId)
+	if not userInfo:
 		raise FileNotFoundError("user "+userId+" does not exist")
-	userInfo = getResp['Item']
+
 	if 'numCreatedItems' in userInfo:
 		num = userInfo['numCreatedItems'] + 1
 	else:
@@ -61,7 +93,7 @@ def nextItemNum(userId):
 		
 	#set the numCreatedItems for the user to num
 	#could make this a separate editUser(attrName, attrValue) function
-	editResp = table.update_item(
+	editResp = userTableResoruce().update_item(
 		Key = {"userId": userId},
 		ExpressionAttributeNames={
 			"#attrName": "numCreatedItems",
@@ -72,10 +104,3 @@ def nextItemNum(userId):
 		UpdateExpression="SET #attrName = :attrValue",
 	)
 	return num
-
-def userTableResource():
-	user_table_name = os.environ['USER_TABLE']
-	region = os.environ['REGION']
-	dynamodb = boto3.resource('dynamodb', region_name=region)
-	table = dynamodb.Table(user_table_name)
-	return table
