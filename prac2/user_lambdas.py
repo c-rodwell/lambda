@@ -27,13 +27,6 @@ def create_user(event, context):
 def get_user(event, context):
 	try:
 		[userId] = json_func.get_querystring_args(event, {'userId':str})
-		
-		# table = userTableResource()
-		# resp = table.get_item(Key={"userId": userId})
-		# if 'Item' not in resp:
-		# 	raise FileNotFoundError("user "+userId+" does not exist")
-		#userInfo = resp['Item']
-
 		userInfo = existingUser(userId)
 		if not userInfo:
 			raise FileNotFoundError("user "+userId+" does not exist")
@@ -70,18 +63,12 @@ def userTableResource():
 def existingUser(userId):
 	table = userTableResource()
 	resp = table.get_item(Key={"userId": userId})
-	if 'Item' in getResp:
+	if 'Item' in resp:
 		return resp['Item'] 
 	return None
 
 #increment the user's item counter, return the current value
 def nextItemNum(userId):
-	# table = userTableResource()
-	# getResp = table.get_item(Key={"userId": userId})
-	# if 'Item' not in getResp:
-	# 	raise FileNotFoundError("user "+userId+" does not exist")
-	# userInfo = getResp['Item']
-
 	userInfo = existingUser(userId)
 	if not userInfo:
 		raise FileNotFoundError("user "+userId+" does not exist")
@@ -93,7 +80,7 @@ def nextItemNum(userId):
 		
 	#set the numCreatedItems for the user to num
 	#could make this a separate editUser(attrName, attrValue) function
-	editResp = userTableResoruce().update_item(
+	editResp = userTableResource().update_item(
 		Key = {"userId": userId},
 		ExpressionAttributeNames={
 			"#attrName": "numCreatedItems",
