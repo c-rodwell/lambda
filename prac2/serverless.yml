@@ -174,15 +174,41 @@ resources:
           Ref: CognitoUserPool
         Domain: '${self:service}-${self:provider.stage}'
 
-# Print out the Id of the User Pool that is created
-Outputs:
-  UserPoolId:
-    Value:
-      Ref: CognitoUserPool
+    UserServer:
+      Type: AWS::Cognito::UserPoolResourceServer
+      Properties:
+        Identifier: users
+        Name: "Users Server"
+        Scopes:
+            - ScopeName: read
+              ScopeDescription: "read users: get user"
+            - ScopeName: write
+              ScopeDescription: "write users: create/edit/delete users"
+        UserPoolId: 
+          Ref: CognitoUserPool
 
-  UserPoolClientId:
-    Value:
-      Ref: CognitoUserPoolClient
+    ItemServer:
+      Type: AWS::Cognito::UserPoolResourceServer
+      Properties:
+        Identifier: items
+        Name: "Items Server"
+        Scopes:
+            - ScopeName: read 
+              ScopeDescription: "read items: get item, get all user items"
+            - ScopeName: write 
+              ScopeDescription: "write items: create/edit/delete item"
+        UserPoolId:
+          Ref: CognitoUserPool  
+
+#Print out the Id of the User Pool that is created
+  Outputs:
+    UserPoolId:
+      Value:
+        Ref: CognitoUserPool
+
+    UserPoolClientId:
+      Value:
+        Ref: CognitoUserPoolClient
 
 # For full config options, check the docs:
 #    docs.serverless.com
