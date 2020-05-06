@@ -36,42 +36,71 @@ functions:
      - http:
         path: users
         method: post
+        authorizer:
+          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          scopes:
+           - users/write
   get_user:
     handler: user_lambdas.get_user
     events:
      - http:
         path: users
         method: get
+        authorizer:
+          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          scopes:
+           - users/read
   add_item:
     handler: item_lambdas.add_item
     events:
      - http:
         path: items
         method: post
+        authorizer:
+          #arn:aws:cognito-idp:REGION:ACCOUNT_ID:userpool/USER_POOL_ID
+          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          scopes:
+           - items/write
   get_item:
     handler: item_lambdas.get_item
     events:
      - http:
         path: items
         method: get
+        authorizer:
+          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          scopes:
+           - items/read
   get_user_items:
     handler: item_lambdas.get_user_items
     events:
      - http:
         path: useritems
         method: get
+        authorizer:
+          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          scopes:
+           - items/read
   edit_item_field:
     handler: item_lambdas.edit_item_field
     events:
      - http:
         path: items
         method: put
+        authorizer:
+          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          scopes:
+           - items/write
   delete_item:
     handler: item_lambdas.delete_item
     events:
      - http:
         path: items
         method: delete
+        authorizer:
+          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          scopes:
+           - items/write
 
 resources:
   Resources:
