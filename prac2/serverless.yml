@@ -6,6 +6,7 @@ org: rodwellcolin
 custom:
   itemTableName: '${self:provider.stage}item_table'
   userTableName: '${self:provider.stage}user_table1'
+  userPoolName: '${self:provider.stage}user_pool'
 
 provider:
   name: aws
@@ -141,6 +142,47 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:custom.itemTableName}
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:custom.userPoolName}
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: '${self:custom.userPoolName}-client'
+        UserPoolId:
+          Ref: CognitoUserPool
+        SupportedIdentityProviders: ["COGNITO"]
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthFlows: ["implicit"] #options are [implicit, client_credentials, code]
+        CallbackURLs: ["https://www.google.com"]
+        AllowedOAuthScopes: ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"]
+        ExplicitAuthFlows: #allowed: [ALLOW_CUSTOM_AUTH, ADMIN_NO_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_PASSWORD_AUTH, ALLOW_USER_SRP_AUTH, CUSTOM_AUTH_FLOW_ONLY, USER_PASSWORD_AUTH, ALLOW_ADMIN_USER_PASSWORD_AUTH]
+          - ADMIN_NO_SRP_AUTH #not sure what this is - not listed on dashboard. but all the other ones say not allowed with legacy something.
+        GenerateSecret: false
+
+    UserPoolDomain:
+      Type: 'AWS::Cognito::UserPoolDomain'
+      Properties:
+        UserPoolId:
+          Ref: CognitoUserPool
+        Domain: '${self:service}-${self:provider.stage}'
+
+# Print out the Id of the User Pool that is created
+Outputs:
+  UserPoolId:
+    Value:
+      Ref: CognitoUserPool
+
+  UserPoolClientId:
+    Value:
+      Ref: CognitoUserPoolClient
 
 # For full config options, check the docs:
 #    docs.serverless.com
