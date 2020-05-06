@@ -162,7 +162,7 @@ resources:
         AllowedOAuthFlowsUserPoolClient: true
         AllowedOAuthFlows: ["implicit"] #options are [implicit, client_credentials, code]
         CallbackURLs: ["https://www.google.com"]
-        AllowedOAuthScopes: ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"]
+        AllowedOAuthScopes: ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin", "items/read", "items/write"]
         ExplicitAuthFlows: #allowed: [ALLOW_CUSTOM_AUTH, ADMIN_NO_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_PASSWORD_AUTH, ALLOW_USER_SRP_AUTH, CUSTOM_AUTH_FLOW_ONLY, USER_PASSWORD_AUTH, ALLOW_ADMIN_USER_PASSWORD_AUTH]
           - ADMIN_NO_SRP_AUTH #not sure what this is - not listed on dashboard. but all the other ones say not allowed with legacy something.
         GenerateSecret: false
