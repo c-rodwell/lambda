@@ -38,7 +38,9 @@ functions:
         path: users
         method: post
         authorizer:
-          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
           scopes:
            - users/write
   get_user:
@@ -48,7 +50,9 @@ functions:
         path: users
         method: get
         authorizer:
-          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
           scopes:
            - users/read
   add_item:
@@ -58,8 +62,9 @@ functions:
         path: items
         method: post
         authorizer:
-          #arn:aws:cognito-idp:REGION:ACCOUNT_ID:userpool/USER_POOL_ID
-          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
           scopes:
            - items/write
   get_item:
@@ -69,7 +74,9 @@ functions:
         path: items
         method: get
         authorizer:
-          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
           scopes:
            - items/read
   get_user_items:
@@ -79,7 +86,9 @@ functions:
         path: useritems
         method: get
         authorizer:
-          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
           scopes:
            - items/read
   edit_item_field:
@@ -89,7 +98,9 @@ functions:
         path: items
         method: put
         authorizer:
-          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
           scopes:
            - items/write
   delete_item:
@@ -99,7 +110,9 @@ functions:
         path: items
         method: delete
         authorizer:
-          arn: arn:aws:cognito-idp:us-east-2:269362602340:userpool/us-east-2_V3uUoskOU
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
           scopes:
            - items/write
 
@@ -198,7 +211,20 @@ resources:
             - ScopeName: write 
               ScopeDescription: "write items: create/edit/delete item"
         UserPoolId:
-          Ref: CognitoUserPool  
+          Ref: CognitoUserPool
+
+    ApiGatewayAuthorizer: 
+      Type: AWS::ApiGateway::Authorizer
+      Properties: 
+        Name: CognitoAuthorizer
+        Type: COGNITO_USER_POOLS
+        IdentitySource: method.request.header.Authorization
+        RestApiId: 
+          Ref: ApiGatewayRestApi
+        ProviderARNs: 
+          - Fn::GetAtt:
+              - CognitoUserPool
+              - Arn
 
 #Print out the Id of the User Pool that is created
   Outputs:
