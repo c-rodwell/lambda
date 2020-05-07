@@ -71,3 +71,10 @@ class DecimalEncoder(json.JSONEncoder):
         if isinstance(obj, decimal.Decimal):
             return int(obj)
         return super(DecimalEncoder, self).default(obj)
+
+def get_username(event):
+	client = boto3.client('cognito-idp')
+	token = event['headers']['Authorization']
+	shorter_token = token[7:] #chop off the "Bearer "
+	response = client.get_user(AccessToken = shorter_token)
+	return response['Username']
