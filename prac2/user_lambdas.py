@@ -1,9 +1,34 @@
+from __future__ import print_function
 import json
 import boto3
 import os
 import json_func
 
 #_____LAMBDAS_____
+
+#post-confirmation custom handler for cognito
+#for now, just make it log info - copy hello.log_info. then adjust for whatever info it gives.
+def postConfirmation(event, context):
+	try:
+		# Send post authentication data to Cloudwatch logs
+		print ("Authentication successful")
+		print('## EVENT')
+		print(event)
+		print ("Trigger function =", event['triggerSource'])
+		print ("User pool = ", event['userPoolId'])
+		print ("App client ID = ", event['callerContext']['clientId'])
+		print ("User ID = ", event['userName'])
+
+		userId = event['userName']
+		name = "dummy name"
+		# #get whatever user attributes we want from cognito
+		# email = event['request']['userAttributes']['email']
+		resp = userTableResource().put_item(Item={"userId": userId, "name": name})
+		print("added the user to dynamodb user table")
+		return event
+	except Exception as err:
+		print(err)
+		return event
 
 def create_user(event, context):
 	try:

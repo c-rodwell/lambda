@@ -4,9 +4,9 @@ app: newapp
 org: rodwellcolin
 
 custom:
-  itemTableName: '${self:provider.stage}item_table'
-  userTableName: '${self:provider.stage}user_table1'
-  userPoolName: '${self:provider.stage}user_pool'
+  itemTableName: '${self:provider.stage}_item_table'
+  userTableName: '${self:provider.stage}_user_table'
+  userPoolName: '${self:provider.stage}_user_pool'
 
 provider:
   name: aws
@@ -31,6 +31,13 @@ provider:
     REGION: ${self:provider.region}
 
 functions:
+  postConfirmation:
+    handler: user_lambdas.postConfirmation
+    events:
+      - cognitoUserPool:
+          pool: ${self:custom.userPoolName}
+          trigger: PostConfirmation
+          existing: true
   log_info:
     handler: hello.log_info
     events:
@@ -177,21 +184,6 @@ resources:
         AutoVerifiedAttributes:
           - email
 
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: '${self:custom.userPoolName}-client'
-        UserPoolId:
-          Ref: CognitoUserPool
-        SupportedIdentityProviders: ["COGNITO"]
-        AllowedOAuthFlowsUserPoolClient: true
-        AllowedOAuthFlows: ["implicit"] #options are [implicit, client_credentials, code]
-        CallbackURLs: ["https://www.google.com"]
-        AllowedOAuthScopes: ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin", "items/read", "items/write"]
-        ExplicitAuthFlows: #allowed: [ALLOW_CUSTOM_AUTH, ADMIN_NO_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_PASSWORD_AUTH, ALLOW_USER_SRP_AUTH, CUSTOM_AUTH_FLOW_ONLY, USER_PASSWORD_AUTH, ALLOW_ADMIN_USER_PASSWORD_AUTH]
-          - ADMIN_NO_SRP_AUTH #not sure what this is - not listed on dashboard. but all the other ones say not allowed with legacy something.
-        GenerateSecret: false
-
     UserPoolDomain:
       Type: 'AWS::Cognito::UserPoolDomain'
       Properties:
@@ -224,6 +216,21 @@ resources:
               ScopeDescription: "write items: create/edit/delete item"
         UserPoolId:
           Ref: CognitoUserPool
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: '${self:custom.userPoolName}-client'
+        UserPoolId:
+          Ref: CognitoUserPool
+        SupportedIdentityProviders: ["COGNITO"]
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthFlows: ["implicit"] #options are [implicit, client_credentials, code]
+        CallbackURLs: ["https://www.google.com"]
+        AllowedOAuthScopes: ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin", "items/read", "items/write"]
+        ExplicitAuthFlows: #allowed: [ALLOW_CUSTOM_AUTH, ADMIN_NO_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_PASSWORD_AUTH, ALLOW_USER_SRP_AUTH, CUSTOM_AUTH_FLOW_ONLY, USER_PASSWORD_AUTH, ALLOW_ADMIN_USER_PASSWORD_AUTH]
+          - ADMIN_NO_SRP_AUTH #not sure what this is - not listed on dashboard. but all the other ones say not allowed with legacy something.
+        GenerateSecret: false
 
     ApiGatewayAuthorizer: 
       Type: AWS::ApiGateway::Authorizer
