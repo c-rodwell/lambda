@@ -126,7 +126,7 @@ functions:
     handler: item_lambdas.delete_item
     events:
      - http:
-        path: items
+        path: my/items
         method: delete
         authorizer:
           type: COGNITO_USER_POOLS
@@ -134,6 +134,68 @@ functions:
             Ref: ApiGatewayAuthorizer
           scopes:
            - items/write
+
+  #"my items" functions:
+  add_my_item:
+    handler: myitem_lambdas.add_item
+    events:
+     - http:
+        path: my/items
+        method: post
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          scopes:
+           - my/items/write
+  get_my_item:
+    handler: myitem_lambdas.get_item
+    events:
+     - http:
+        path: my/items
+        method: get
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          scopes:
+           - my/items/read
+  get_my_items:
+    handler: myitem_lambdas.get_user_items
+    events:
+     - http:
+        path: my/useritems
+        method: get
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          scopes:
+           - my/items/read
+  edit_my_item_field:
+    handler: myitem_lambdas.edit_item_field
+    events:
+     - http:
+        path: my/items
+        method: put
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          scopes:
+           - my/items/write
+  delete_my_item:
+    handler: myitem_lambdas.delete_item
+    events:
+     - http:
+        path: my/items
+        method: delete
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          scopes:
+           - my/items/write
 
 resources:
   Resources:
@@ -216,6 +278,19 @@ resources:
               ScopeDescription: "write items: create/edit/delete item"
         UserPoolId:
           Ref: CognitoUserPool
+    
+    MyItemServer:
+      Type: AWS::Cognito::UserPoolResourceServer
+      Properties:
+        Identifier: my/items
+        Name: "My Items Server"
+        Scopes:
+            - ScopeName: read 
+              ScopeDescription: "read own items: get item, get all user items"
+            - ScopeName: write 
+              ScopeDescription: "write own items: create/edit/delete item"
+        UserPoolId:
+          Ref: CognitoUserPool
 
     CognitoUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
@@ -227,9 +302,9 @@ resources:
         AllowedOAuthFlowsUserPoolClient: true
         AllowedOAuthFlows: ["implicit"] #options are [implicit, client_credentials, code]
         CallbackURLs: ["https://www.google.com"]
-        AllowedOAuthScopes: ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin", "items/read", "items/write"]
+        AllowedOAuthScopes: ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin", "my/items/read", "my/items/write"]
         ExplicitAuthFlows: #allowed: [ALLOW_CUSTOM_AUTH, ADMIN_NO_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_PASSWORD_AUTH, ALLOW_USER_SRP_AUTH, CUSTOM_AUTH_FLOW_ONLY, USER_PASSWORD_AUTH, ALLOW_ADMIN_USER_PASSWORD_AUTH]
-          - ADMIN_NO_SRP_AUTH #not sure what this is - not listed on dashboard. but all the other ones say not allowed with legacy something.
+          - ADMIN_NO_SRP_AUTH #this is not listed on dashboard. all dashoboard "ALLOW" options are not allowed with legacy something.
         GenerateSecret: false
 
     ApiGatewayAuthorizer: 

@@ -32,7 +32,7 @@ def get_item(event, context):
 		table = itemTableResource()
 		resp = table.get_item(Key={"userId": userId, "itemId": itemId})
 		if 'Item' not in resp:
-			raise FileNotFoundError("item with userId = "+userId+", itemId = "+str(itemId)+" does not exist")
+			raise FileNotFoundError("item with itemId = "+str(itemId)+" does not exist")
 		return{
 			"statusCode": 200,
 			"body": json.dumps(resp['Item'], cls=json_func.DecimalEncoder)
@@ -64,7 +64,7 @@ def edit_item_field(event, context):
 		if not existingItem(userId, itemId):
 			return{
 				"statusCode": 404,
-				"body": "item with userId = "+userId+", itemId = "+str(itemId)+" does not exist."
+				"body": "item with itemId = "+str(itemId)+" does not exist."
 			}
 		editResp = itemTableResource().update_item(
 			Key = {"userId": userId, "itemId": itemId},
@@ -114,7 +114,7 @@ def delete_item(event, context):
 		else:
 			return{
 				"statusCode": 404,
-				"body": "item with userId = "+userId+", itemId = "+str(itemId)+" does not exist."
+				"body": "item with itemId = "+str(itemId)+" does not exist."
 			}
 	except Exception as err:
 		return json_func.errorMessage(err)
