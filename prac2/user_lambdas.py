@@ -58,7 +58,6 @@ def userTableResource():
 	return table
 
 #return user info if exists, else None
-#use in: get_user, nextItemNum.
 #is it inefficient to create userTableResource a bunch of times? could pass as argument
 def existingUser(userId):
 	table = userTableResource()

@@ -56,8 +56,12 @@ def get_user_items(event, context):
 def edit_item_field(event, context):
 	try:
 		userId, itemId, attrName, attrValue = json_func.get_body_args(event, {'userId':str, 'itemId':int, 'attrName':str, 'attrValue':str})
-		table = itemTableResource()
-		editResp = table.update_item(
+		if not existingItem(userId, itemId):
+			return{
+				"statusCode": 404,
+				"body": "item with userId = "+userId+", itemId = "+str(itemId)+" does not exist."
+			}
+		editResp = itemTableResource().update_item(
 			Key = {"userId": userId, "itemId": itemId},
 			ExpressionAttributeNames={
 				"#attrName": attrName,
@@ -117,3 +121,10 @@ def itemTableResource():
 	dynamodb = boto3.resource('dynamodb', region_name=region)
 	table = dynamodb.Table(item_table_name)
 	return table
+
+def existingItem(userId, itemId):
+	table = itemTableResource()
+	resp = table.get_item(Key={"userId": userId, "itemId": itemId})
+	if 'Item' in resp:
+		return resp['Item'] 
+	return None
