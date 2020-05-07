@@ -1,31 +1,58 @@
 import json
 import boto3
 import os
+import json_func
+import user_lambdas
 
 #event structure is {'statuscode': <num>, 'body': <a json in string form> }
 #so we loads and dumps the body but not the entire event.
 
-def hello(event, context):
-    body = {
-        "message": "here is the request you sent",
-        "input": event
-    }
+def log_info(event, context):
+	try:
+		client = boto3.client('cognito-idp')
+		token = event['headers']['Authorization']
+		shorter_token = token[7:] #chop off the "Bearer "
+		response = client.get_user(AccessToken = shorter_token)
+		username = response['Username']
 
-    response = {
-        "statusCode": 200,
-        "body": json.dumps(body)
-    }
+		#logging statements
+		print('## ENVIRONMENT VARIABLES')
+		print(os.environ)
+		print('## EVENT')
+		print(event)
+		print('## USERNAME')
+		print(username)
+		print('## CONTEXT')
+		print(context)
+		print('## CONTEXT IDENTITY')
+		print(context.identity)
+		print('## COGNITO IDENTITY ID')
+		print(context.identity.cognito_identity_id)
+		print('## COGNITO IDENTITY POOL ID')
+		print(context.identity.cognito_identity_pool_id)
 
-    return response
+		body = {
+			"message": "here is the request you sent",
+			"event": event,
+			"token": token,
+			"shorter_token": shorter_token,
+			"username": username,
+			"context": str(context),
+			"context_identity": str(context.identity),
+			"context_identity_id": str(context.identity.cognito_identity_id),
+			"context_identity_pool_id": str(context.identity.cognito_identity_pool_id)
+		}
 
-    # Use this code if you don't use the http event with the LAMBDA-PROXY
-    # integration
-    """
-    return {
-        "message": "Go Serverless v1.0! Your function executed successfully!",
-        "event": event
-    }
-    """
+		response = {
+			"statusCode": 200,
+			"body": json.dumps(body)
+		}
+		return response
+	except Exception as err:
+		return {
+			"statusCode": 500,
+			"body": json.dumps(json_func.errorMessage(err))
+		}
 
 def empty(event, context):
 	return {
@@ -109,7 +136,17 @@ def errorInfo(err):
 		"string": str(err)
 	}
 
-
+# def context_info(event, context):
+# 	try:
+# 		return {
+# 			"statusCode": 200,
+# 			"body": json.dumps(context)
+# 		}
+# 	except Exception as err:
+# 		return {
+# 			"statusCode": 500,
+# 			"body": json.dumps(errorInfo(err))
+# 		}
 
 
 #insert to a table - should this use environment variables for table name, region, etc?

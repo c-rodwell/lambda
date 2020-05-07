@@ -31,6 +31,18 @@ provider:
     REGION: ${self:provider.region}
 
 functions:
+  log_info:
+    handler: hello.log_info
+    events:
+     - http:
+        path: log_info
+        method: any
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: ApiGatewayAuthorizer
+          scopes:
+           - items/write
   create_user:
     handler: user_lambdas.create_user
     events:
