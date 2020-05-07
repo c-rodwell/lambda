@@ -18,12 +18,15 @@ def postConfirmation(event, context):
 		print ("User pool = ", event['userPoolId'])
 		print ("App client ID = ", event['callerContext']['clientId'])
 		print ("User ID = ", event['userName'])
+		print("request = ", event['request'])
+		print("user attributes = ", event['request']['userAttributes'])
+		print("user email = ", event['request']['userAttributes']['email'])
 
 		userId = event['userName']
-		name = "dummy name"
+		#name = "dummy name"
 		# #get whatever user attributes we want from cognito
-		# email = event['request']['userAttributes']['email']
-		resp = userTableResource().put_item(Item={"userId": userId, "name": name})
+		email = event['request']['userAttributes']['email']
+		resp = userTableResource().put_item(Item={"userId": userId, "email": email})
 		print("added the user to dynamodb user table")
 		return event
 	except Exception as err:
