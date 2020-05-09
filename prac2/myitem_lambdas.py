@@ -14,7 +14,7 @@ from boto3.dynamodb.conditions import Key
 def add_item(event, context):
 	try:
 		userId = json_func.get_username(event)
-		value = json_func.get_body_args(event, {'value':str})
+		[value] = json_func.get_body_args(event, {'value':str})
 		itemNum = user_lambdas.nextItemNum(userId)
 		table = itemTableResource()
 		resp = table.put_item(Item={"userId": userId, "itemId": itemNum, "value": value})
@@ -28,7 +28,7 @@ def add_item(event, context):
 def get_item(event, context):
 	try:
 		userId = json_func.get_username(event)
-		itemId = json_func.get_querystring_args(event, {'itemId':int})
+		[itemId] = json_func.get_querystring_args(event, {'itemId':int})
 		table = itemTableResource()
 		resp = table.get_item(Key={"userId": userId, "itemId": itemId})
 		if 'Item' not in resp:
@@ -91,7 +91,7 @@ def edit_item_field(event, context):
 def delete_item(event, context):
 	try:
 		userId = json_func.get_username(event)
-		itemId = json_func.get_body_args(event, {'itemId':int})
+		[itemId] = json_func.get_body_args(event, {'itemId':int})
 		item_table_name = os.environ['ITEM_TABLE']
 		client = boto3.client('dynamodb')
 		resp = client.delete_item(
