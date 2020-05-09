@@ -25,29 +25,62 @@ def add_item(event, context):
 	except Exception as err:
 		return json_func.errorMessage(err)
 
-def get_item(event, context):
-	try:
-		userId = json_func.get_username(event)
-		[itemId] = json_func.get_querystring_args(event, {'itemId':int})
-		table = itemTableResource()
-		resp = table.get_item(Key={"userId": userId, "itemId": itemId})
-		if 'Item' not in resp:
-			raise FileNotFoundError("item with itemId = "+str(itemId)+" does not exist")
-		return{
-			"statusCode": 200,
-			"body": json.dumps(resp['Item'], cls=json_func.DecimalEncoder)
-		}
-	except Exception as err:
-		return json_func.errorMessage(err)
+# def get_item(event, context):
+# 	try:
+# 		userId = json_func.get_username(event)
+# 		[itemId] = json_func.get_querystring_args(event, {'itemId':int})
+# 		table = itemTableResource()
+# 		resp = table.get_item(Key={"userId": userId, "itemId": itemId})
+# 		if 'Item' not in resp:
+# 			raise FileNotFoundError("item with itemId = "+str(itemId)+" does not exist")
+# 		return{
+# 			"statusCode": 200,
+# 			"body": json.dumps(resp['Item'], cls=json_func.DecimalEncoder)
+# 		}
+# 	except Exception as err:
+# 		return json_func.errorMessage(err)
 
-#get all items for the user
-#TODO - allow filters
-#return count and metadata, or just the items list?
-def get_user_items(event, context):
+# #get all items for the user
+# #TODO - allow filters
+# #return count and metadata, or just the items list?
+# def get_user_items(event, context):
+# 	try:
+# 		userId = json_func.get_username(event)
+# 		table = itemTableResource()
+# 		resp = table.query(KeyConditionExpression=Key('userId').eq(userId))
+# 		return{
+# 			"statusCode": 200,
+# 			"body": json.dumps(resp, cls=json_func.DecimalEncoder)
+# 		}
+# 	except Exception as err:
+# 		return json_func.errorMessage(err)
+
+#get user's items which match a query
+#caution - make sure it can't get other user's items, even with strange queries.
+def get_matching_items(event, context):
 	try:
 		userId = json_func.get_username(event)
-		table = itemTableResource()
-		resp = table.query(KeyConditionExpression=Key('userId').eq(userId))
+		keyExpression = Key('userId').eq(userId)
+		
+		#apply optional filers on itemId
+		operator, compareto = json_func.get_querystring_optional_args(event, {'operator': str, 'compareto': int})#, 'val2': int})
+		sortKeyOperators = {
+			"eq": boto3.dynamodb.conditions.Key.eq,
+			"lt": boto3.dynamodb.conditions.Key.lt,
+			"lte": boto3.dynamodb.conditions.Key.lte,
+			"gt": boto3.dynamodb.conditions.Key.gt,
+			"gte": boto3.dynamodb.conditions.Key.gte
+			#begins with - only applies to strings
+			#"between": boto3.dynamodb.conditions.key.between	#have to handle an extra argument for this.
+		}
+		if operator:
+			func = sortKeyOperators[operator]
+			keyExpression = keyExpression & func(Key('itemId'), compareto)
+
+		#TODO: apply FilterExpression to filter results by non-key attributes.
+
+		#do the query, return results
+		resp = itemTableResource().query(KeyConditionExpression=expression)
 		return{
 			"statusCode": 200,
 			"body": json.dumps(resp, cls=json_func.DecimalEncoder)

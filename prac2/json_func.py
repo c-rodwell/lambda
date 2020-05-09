@@ -15,12 +15,25 @@ import decimal
 #exceptions can happen here:
 #missing queryStringParameters or parameter -> KeyError with missing arg as the string
 #empty string -> botocore.exceptions.ClientError
-def get_querystring_args(event, required_args):
+def get_querystring_args(event, args):
 	queryString = event['queryStringParameters']
 	output = []
-	for name in required_args:
-		arg_type = required_args[name]
+	for name in args:
+		arg_type = args[name]
 		output.append(arg_type(queryString[name]))
+	return output
+
+#optional args - return it if present, or None.
+#will still error if argument is not the expected type
+def get_querystring_optional_args(event, args):
+	queryString = event['queryStringParameters']
+	output = []
+	for name in args:
+		arg_type = args[name]
+		if name in queryString
+			output.append(arg_type(queryString[name]))
+		else:
+			output.append(None)
 	return output
 
 #get arguments from body, throws exception if not found
