@@ -148,18 +148,6 @@ functions:
             Ref: ApiGatewayAuthorizer
           scopes:
            - my/items/write
-  # get_my_item:
-  #   handler: myitem_lambdas.get_item
-  #   events:
-  #    - http:
-  #       path: my/items
-  #       method: get
-  #       authorizer:
-  #         type: COGNITO_USER_POOLS
-  #         authorizerId:
-  #           Ref: ApiGatewayAuthorizer
-  #         scopes:
-  #          - my/items/read
   get_my_items:
     handler: myitem_lambdas.get_matching_items
     events:

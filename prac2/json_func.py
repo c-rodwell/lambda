@@ -26,11 +26,13 @@ def get_querystring_args(event, args):
 #optional args - return it if present, or None.
 #will still error if argument is not the expected type
 def get_querystring_optional_args(event, args):
+	if 'queryStringParameters' not in event:
+		return [None for arg in args]
 	queryString = event['queryStringParameters']
 	output = []
 	for name in args:
 		arg_type = args[name]
-		if name in queryString
+		if name in queryString:
 			output.append(arg_type(queryString[name]))
 		else:
 			output.append(None)
